@@ -16,8 +16,14 @@ public class Estructuras {
 
 	@Id
 	@Column(name = "PLANTILLA")
-	private String siglaTotal;
+	private String plantilla;
 	
 	@Column(name = "SIGLA_TOTAL")
-	private String nombreTotal;
+	private String sigleTotal;
+	
+	@Column(name = "SIGLA_DERIVADO")
+	private String siglaDerivado;
+	
+	@Column(name = "SIGLA_SUBDERIVADO")
+	private String siglaSubderivado;
 }

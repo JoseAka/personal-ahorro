@@ -35,8 +35,7 @@ public class LectorCsvService {
 			Iterable<CSVRecord> csvRecords = csvParser.getRecords();
 
 			for (CSVRecord csvRecord : csvRecords) {
-				ConceptoCsv tutorial = new ConceptoCsv(csvRecord.get(Constantes.CONCEPTO));
-
+				ConceptoCsv tutorial = ConceptoCsv.builder().concepto(csvRecord.get(Constantes.CONCEPTO)).build();
 				tutorials.add(tutorial);
 			}
 

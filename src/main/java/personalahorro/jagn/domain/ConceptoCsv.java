@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ConceptoCsv {
 
-	private String Concepto;
+	private String concepto;
 }

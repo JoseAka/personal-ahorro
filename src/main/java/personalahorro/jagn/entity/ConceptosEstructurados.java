@@ -13,13 +13,16 @@ import lombok.Data;
 @Data
 @Entity
 @Builder
-@Table(name = "parametrizado_conceptos")
-public class ParametrizadoConceptos {
+@Table(name = "CONCEPTOS_ESTRUCTURADOS")
+public class ConceptosEstructurados {
 
 	@Id
 	@Column(name = "NOMBRE_CONCEPTO")
 	private String nombreConcepto;
 	
+	@Column(name = "PLANTILLA")
+	private LocalDateTime plantilla;
+	
 	@Column(name = "TIMESTAMP")
-	private LocalDateTime timestamp;
+	private LocalDateTime timeStamp;
 }

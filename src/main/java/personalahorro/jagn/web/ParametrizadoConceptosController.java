@@ -11,22 +11,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import personalahorro.jagn.domain.ParametrizadoConceptosResponse;
+import personalahorro.jagn.domain.ConceptosEstructuradosResponse;
+import personalahorro.jagn.service.ConceptosEstructuradosService;
 import personalahorro.jagn.service.LectorCsvService;
-import personalahorro.jagn.service.ParametrizadoConceptosService;
 
 @RestController
 @RequestMapping("/rest/paramConcepts")
 public class ParametrizadoConceptosController {
 
 	@Autowired
-	private ParametrizadoConceptosService parametrizadoConceptosService;
+	private ConceptosEstructuradosService conceptosEstructuradosService;
 	@Autowired
 	private LectorCsvService lectorCsvService;
 
 	@GetMapping("/getAll")
-	public ResponseEntity<List<ParametrizadoConceptosResponse>> getAllConceptos() {
-		return new ResponseEntity<>(parametrizadoConceptosService.getAll(), HttpStatus.OK);
+	public ResponseEntity<List<ConceptosEstructuradosResponse>> getAllConceptos() {
+		return new ResponseEntity<>(conceptosEstructuradosService.getAll(), HttpStatus.OK);
 	}
 
 	@PostMapping("/importCsv")
@@ -35,7 +35,7 @@ public class ParametrizadoConceptosController {
 
 		if (lectorCsvService.hasCSVFormat(file)) {
 			try {
-				parametrizadoConceptosService.save(file);
+				conceptosEstructuradosService.save(file);
 
 				return ResponseEntity.status(HttpStatus.OK).body("OK");
 			} catch (Exception e) {

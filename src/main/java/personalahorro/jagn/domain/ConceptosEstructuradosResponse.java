@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ParametrizadoConceptosResponse {
+public class ConceptosEstructuradosResponse {
 
 	private String nombreConcepto;
-	private String timestamp;
+	private String plantilla;
 }
