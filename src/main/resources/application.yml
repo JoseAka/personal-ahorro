@@ -10,6 +10,11 @@ spring:
       ddl-auto: none
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl      
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl    
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl   
+logging:
+  level:
+    ROOT: ERROR
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE 
 server:
   port: 8081

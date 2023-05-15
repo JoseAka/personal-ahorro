@@ -8,15 +8,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import personalahorro.jagn.service.LectorExcelService;
+import personalahorro.jagn.service.LectorExcelServicePRUEBA;
 import personalahorro.jagn.util.Util;
 
 @RestController
 @RequestMapping("/rest/files")
-public class LectorExcelController {
+public class LectorExcelControllerPRUEBA {
 
 	@Autowired
-	private LectorExcelService lectorExcelService;
+	private LectorExcelServicePRUEBA lectorExcelService;
 
 
 	@PostMapping("/importExcel")

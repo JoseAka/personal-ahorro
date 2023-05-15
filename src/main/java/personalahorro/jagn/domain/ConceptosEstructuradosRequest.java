@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ConceptoCsv {
+public class ConceptosEstructuradosRequest {
 
-	private String concepto;
+	private String nombreConcepto;
+	private String plantilla;
 }

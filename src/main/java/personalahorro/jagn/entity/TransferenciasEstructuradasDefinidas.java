@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -17,16 +19,27 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "CONCEPTOS_ESTRUCTURADOS")
-public class ConceptosEstructurados {
+@Table(name = "TRANFERENCIAS_ESTRUCTURAS_DEFINIDAS")
+public class TransferenciasEstructuradasDefinidas {
 
 	@Id
-	@Column(name = "NOMBRE_CONCEPTO")
-	private String nombreConcepto;
-	
 	@Column(name = "PLANTILLA")
 	private String plantilla;
 	
+	@Column(name = "NOMBRE_CONCEPTO")
+	private String nombreConcepto;
+	
+	@Column(name = "MASCARA_OBSERVACIONES")
+	private String mascaraObservaciones;
+	
+	@Column(name = "IMPORTE_MIN")
+	private double importeMin;
+	
+	@Column(name = "IMPORTE_MAX")
+	private double importeMax;
+	
 	@Column(name = "TIMESTAMP_EXECUTED")
 	private LocalDateTime timeStampExecuted;
+	
+	
 }

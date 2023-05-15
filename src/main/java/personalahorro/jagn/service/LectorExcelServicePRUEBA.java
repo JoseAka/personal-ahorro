@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class LectorExcelService {
+public class LectorExcelServicePRUEBA {
 
 	public void entradaFichero(MultipartFile file) {
 		try (InputStream ins = file.getInputStream(); XSSFWorkbook workbook = new XSSFWorkbook(ins)) {

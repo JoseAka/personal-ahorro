@@ -16,6 +16,8 @@ public class ConceptosEstructuradosRepository {
 	@PersistenceContext
 	private EntityManager em;
 
+	private static final String PARAMETER_CONCEPTO = "concepto";
+
 	public List<ConceptosEstructurados> getAll() {
 
 		String sql = " SELECT * FROM {h-schema}CONCEPTOS_ESTRUCTURADOS ";
@@ -24,8 +26,19 @@ public class ConceptosEstructuradosRepository {
 		return query.getResultList();
 	}
 
+	public List<ConceptosEstructurados> getByConcepto(String concepto) {
+
+		String sql = " SELECT * " + " FROM {h-schema}CONCEPTOS_ESTRUCTURADOS " + " WHERE NOMBRE_CONCEPTO = :"
+				+ PARAMETER_CONCEPTO;
+
+		Query query = em.createNativeQuery(sql, ConceptosEstructurados.class);
+		query.setParameter(PARAMETER_CONCEPTO, concepto);
+		return query.getResultList();
+	}
+
 	public void save(ConceptosEstructurados conceptosEstructuradosEntity) {
 
 		em.persist(conceptosEstructuradosEntity);
 	}
+
 }
