@@ -20,8 +20,7 @@ import personalahorro.jagn.domain.ConceptosEstructuradosResponse;
 import personalahorro.jagn.entity.AcumulacionOperaciones;
 import personalahorro.jagn.exception.PersonalAhorroException;
 import personalahorro.jagn.repository.AcumulacionOperacionesRepository;
-import personalahorro.jagn.repository.BizumEstructuradasDefinidasRepository;
-import personalahorro.jagn.repository.TransferenciasEstructuradasDefinidasRepository;
+import personalahorro.jagn.repository.EstructurasCondicionadasRepository;
 import personalahorro.jagn.util.Constantes;
 import personalahorro.jagn.util.Util;
 
@@ -32,10 +31,7 @@ public class AcumulacionOperacionesService {
 	private AcumulacionOperacionesRepository acumulacionOperacionesRepository;
 
 	@Autowired
-	private TransferenciasEstructuradasDefinidasRepository transferenciasEstructuradasDefinidasRepository;
-
-	@Autowired
-	private BizumEstructuradasDefinidasRepository bizumEstructuradasDefinidasRepository;
+	private EstructurasCondicionadasRepository transferenciasEstructuradasDefinidasRepository;
 
 	@Autowired
 	private ConceptosEstructuradosService conceptosEstructuradosService;
@@ -94,7 +90,7 @@ public class AcumulacionOperacionesService {
 		case Constantes.CONCEPTO_TRANSFERENCIA_REALIZADA:
 			return getPlantillaTransferencia(bbvaCsv);
 		case Constantes.CONCEPTO_BIZUM:
-			return getPlantillaBizum(bbvaCsv, conceptosEstructuradosMap);
+			return getPlantillaBizum(bbvaCsv);
 		default:
 			return conceptosEstructuradosMap.getOrDefault(bbvaCsv.getConcepto(), null);
 		}
@@ -108,11 +104,11 @@ public class AcumulacionOperacionesService {
 		return !Util.emptyList(listPlantillas) ? listPlantillas.get(0) : Constantes.PLANTILLA_TRANSFERENCIA_SALIENTE;
 	}
 
-	private String getPlantillaBizum(BBVACsv bbvaCsv, Map<String, String> nombreMap) {
+	private String getPlantillaBizum(BBVACsv bbvaCsv) {
 
 		if (Constantes.OBSERVACION_BIZUM_ENVIADO.contains(bbvaCsv.getObservaciones())) {
 
-			List<String> listPlantillas = bizumEstructuradasDefinidasRepository.getPlantilla(bbvaCsv);
+			List<String> listPlantillas = transferenciasEstructuradasDefinidasRepository.getPlantilla(bbvaCsv);
 			return !Util.emptyList(listPlantillas) ? listPlantillas.get(0) : Constantes.PLANTILLA_BIZUM_SALIENTE;
 		} else {
 			return Constantes.PLANTILLA_BIZUM_ENTRANTE;

@@ -9,11 +9,10 @@ import javax.persistence.Query;
 import org.springframework.stereotype.Repository;
 
 import personalahorro.jagn.domain.BBVACsv;
-import personalahorro.jagn.entity.AcumulacionOperaciones;
-import personalahorro.jagn.entity.ConceptosEstructurados;
+import personalahorro.jagn.util.Util;
 
 @Repository
-public class TransferenciasEstructuradasDefinidasRepository {
+public class EstructurasCondicionadasRepository {
 
 	@PersistenceContext
 	private EntityManager em;
@@ -24,7 +23,7 @@ public class TransferenciasEstructuradasDefinidasRepository {
 
 	public List<String> getPlantilla(BBVACsv bbvaCsv) {
 
-		String sql = " SELECT PLANTILLA " + " FROM {h-schema}TRANFERENCIAS_ESTRUCTURAS_DEFINIDAS"
+		String sql = " SELECT PLANTILLA " + " FROM {h-schema}ESTRUCTURAS_CONDICIONADAS"
 				+ " WHERE NOMBRE_CONCEPTO = :" + PARAMETER_CONCEPTO + "	AND INSTR(UPPER(:" + PARAMETER_OBSERVACION
 				+ "), UPPER(MASCARA_OBSERVACIONES)) " + " AND IMPORTE_MAX <= :" + PARAMETER_IMPORTE
 				+ " AND IMPORTE_MIN <= :" + PARAMETER_IMPORTE;
@@ -33,7 +32,7 @@ public class TransferenciasEstructuradasDefinidasRepository {
 
 		query.setParameter(PARAMETER_CONCEPTO, bbvaCsv.getConcepto());
 		query.setParameter(PARAMETER_OBSERVACION, bbvaCsv.getObservaciones());
-		query.setParameter(PARAMETER_IMPORTE, Math.abs(Double.parseDouble(bbvaCsv.getImporte().replace(",", "."))));
+		query.setParameter(PARAMETER_IMPORTE, Math.abs(Util.stringToDouble(bbvaCsv.getImporte())));
 
 		return (List<String>) query.getResultList();
 	}

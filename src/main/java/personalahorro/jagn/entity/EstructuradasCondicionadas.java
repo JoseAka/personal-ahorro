@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "TRANFERENCIAS_ESTRUCTURAS_DEFINIDAS")
-public class TransferenciasEstructuradasDefinidas {
+@Table(name = "ESTRUCTURAS_CONDICIONADAS")
+public class EstructuradasCondicionadas {
 
 	@Id
 	@Column(name = "PLANTILLA")

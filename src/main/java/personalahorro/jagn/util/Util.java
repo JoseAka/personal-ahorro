@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class Util {
 
 	private static final String DATE_FORMART = "dd-MM-yyyy";
-		
+
 	private Util() {
 
 	}
@@ -24,6 +24,10 @@ public class Util {
 
 	public static boolean emptyList(List<?> in) {
 		return in == null || in.isEmpty();
+	}
+
+	public static double stringToDouble(String number) {
+		return Double.parseDouble(number.replace(",", "."));
 	}
 
 	public static LocalDate strignToLocalDate(String dateStr) {
