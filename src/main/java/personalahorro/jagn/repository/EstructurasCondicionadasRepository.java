@@ -23,10 +23,10 @@ public class EstructurasCondicionadasRepository {
 
 	public List<String> getPlantilla(BBVACsv bbvaCsv) {
 
-		String sql = " SELECT PLANTILLA " + " FROM {h-schema}ESTRUCTURAS_CONDICIONADAS"
-				+ " WHERE NOMBRE_CONCEPTO = :" + PARAMETER_CONCEPTO + "	AND INSTR(UPPER(:" + PARAMETER_OBSERVACION
-				+ "), UPPER(MASCARA_OBSERVACIONES)) " + " AND IMPORTE_MAX <= :" + PARAMETER_IMPORTE
-				+ " AND IMPORTE_MIN <= :" + PARAMETER_IMPORTE;
+		String sql = " SELECT PLANTILLA " + " FROM {h-schema}ESTRUCTURAS_CONDICIONADAS" + " WHERE NOMBRE_CONCEPTO = :"
+				+ PARAMETER_CONCEPTO + "	AND INSTR(UPPER(:" + PARAMETER_OBSERVACION
+				+ "), UPPER(MASCARA_OBSERVACIONES)) " + " AND (IMPORTE_MAX >= :" + PARAMETER_IMPORTE
+				+ " OR IMPORTE_MIN <= :" + PARAMETER_IMPORTE + ")";
 
 		Query query = em.createNativeQuery(sql);
 

@@ -193,9 +193,9 @@ INSERT INTO ESTRUCTURAS (PLANTILLA,SIGLA_TOTAL,SIGLA_DERIVADO,SIGLA_SUBDERIVADO)
 
 -- ESTRUCTURAS_CONDICIONADAS
 INSERT INTO ESTRUCTURAS_CONDICIONADAS (PLANTILLA,NOMBRE_CONCEPTO,MASCARA_OBSERVACIONES,IMPORTE_MIN,IMPORTE_MAX,TIMESTAMP_EXECUTED) VALUES
-	 ('GAS_FIJ-PIS','Transferencia realizada','PLAZA 8 SEP',174.84,183.82,'2023-05-12 14:04:34'),
-	 ('GAS_FIJ-PIS','Transferencia realizada','PLAZA 8 SEPTIEMBRE',174.84,183.82,'2023-05-12 14:04:34'),
-	 ('GAS_FIJ-PIS','Transferencia realizada','PLZ 8SEP',174.84,183.82,'2023-05-12 14:04:34'),
+	 ('GAS_FIJ-PIS','Transferencia realizada','PLAZA 8 SEP',167.6,208.14,'2023-05-12 14:04:34'),
+	 ('GAS_FIJ-PIS','Transferencia realizada','PLAZA 8 SEPTIEMBRE',167.6,208.14,'2023-05-12 14:04:34'),
+	 ('GAS_FIJ-PIS','Transferencia realizada','PLZ 8SEP',167.6,208.14,'2023-05-12 14:04:34'),
 	 ('GAS_FIJ-CCH-DEV_CCH','Transferencia realizada','TRANSFERENCIA COCHE',208.33,208.33,'2023-05-12 14:04:26');
 INSERT INTO ESTRUCTURAS_CONDICIONADAS (PLANTILLA,NOMBRE_CONCEPTO,MASCARA_OBSERVACIONES,IMPORTE_MIN,IMPORTE_MAX,TIMESTAMP_EXECUTED) VALUES
 	 ('GAS_FIJ-CCH-CAC','Bizum','Cambio de aceite',80.0,160.0,'2023-05-13 01:44:46'),
@@ -430,6 +430,7 @@ select *
 from CONCEPTOS_ESTRUCTURADOS;
 -- where NOMBRE_CONCEPTO like '%Adeudo easy sport fuengirola%';
 
+-- delete
 select *
 from ACUMULACION_OPERACIONES;
 
@@ -443,21 +444,93 @@ WHERE e.`SIGLA_TOTAL` = t.`SIGLA_TOTAL`
 	and e.`SIGLA_DERIVADO` = d.`SIGLA_DERIVADO`
 	and e.`SIGLA_SUBDERIVADO` = s.`SIGLA_SUBDERIVADO`;
 
-select *
+
+-- ACUMULACION DE GASTOS FIJOS GASTOS FIJOS AGRUPADOS POR PLANTILLAS DE 2022
+select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
 from ACUMULACION_OPERACIONES
-where PLANTILLA LIKE '%GAS_FIJ-PIS%'
-	OR OBSERVACIONES like '%plaza%'
-	OR OBSERVACIONES like '%plz%';
+where PLANTILLA LIKE '%GAS_FIJ%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
+group by PLANTILLA;
 
+-- ACUMULACION DE GASTOS FIJOS VARIABLES FIJOS AGRUPADOS POR PLANTILLAS DE 2022
+select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
+from ACUMULACION_OPERACIONES
+where PLANTILLA LIKE '%GAS_VAR%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
+group by PLANTILLA;
 
+-- ACUMULACION INGRESOS FIJOS AGRUPADOS POR PLANTILLAS DE 2022
+select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
+from ACUMULACION_OPERACIONES
+where PLANTILLA LIKE '%ING_FIJ%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
+group by PLANTILLA;
 
+-- ACUMULACION DE INGRESOS VARIABLES AGRUPADOS POR PLANTILLAS DE 2022
+select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
+from ACUMULACION_OPERACIONES
+where PLANTILLA LIKE '%ING_VAR%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
+group by PLANTILLA;
 
--- --
--- --
--- COPIAR DE li-front excelFileToCreateRequest() --> leerExcel()
+-- ACUMULACION DE INGRESOS VARIABLES AGRUPADOS POR PLANTILLAS DE 2022
+select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
+from ACUMULACION_OPERACIONES
+where PLANTILLA LIKE '%ING_VAR%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
+group by PLANTILLA;
 
+-- ACUMULACION DE AHORROS AGRUPADOS POR PLANTILLAS DE 2022
+select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
+from ACUMULACION_OPERACIONES
+where PLANTILLA LIKE '%AHR%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
+group by PLANTILLA;
 
+-- ACUMULACION DE INVERSIONES AGRUPADOS POR PLANTILLAS DE 2022
+select sum(IMPORTE) 
+from ACUMULACION_OPERACIONES
+where PLANTILLA LIKE '%INV%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d'));
 
-
+	
+-- ------------------------------- 
+-- ------------------------------- 
+-- COMBOS SELECTS
+-- ------------------------------- 
+-- ------------------------------- 
+	
+SELECT distinct t.NOMBRE_TOTAL, t.SIGLA_TOTAL
+FROM estructuras as e, total_params as t
+WHERE e.SIGLA_TOTAL = t.SIGLA_TOTAL
+	AND e.SIGLA_TOTAL != '#';
+	
+	
+SELECT distinct d.SIGLA_DERIVADO, d.`NOMBRE_DERIVADO`
+FROM `estructuras` as e, `total_params` as t,
+	`derivado_params` as d, `subderivado_params` as s
+WHERE e.`SIGLA_TOTAL` = t.`SIGLA_TOTAL`
+	and e.`SIGLA_DERIVADO` = d.`SIGLA_DERIVADO`
+	and e.`SIGLA_SUBDERIVADO` = s.`SIGLA_SUBDERIVADO`
+	and e.`SIGLA_TOTAL` = :totalParam; 
+	
+	
+SELECT -- e.`PLANTILLA`,
+	-- t.`NOMBRE_TOTAL`, t.SIGLA_TOTAL,
+	distinct d.`NOMBRE_DERIVADO`, d.SIGLA_DERIVADO
+	-- s.`NOMBRE_SUBDERIVADO`, s.SIGLA_SUBDERIVADO 
+FROM `estructuras` as e, `total_params` as t,
+	`derivado_params` as d, `subderivado_params` as s
+WHERE e.`SIGLA_TOTAL` = t.`SIGLA_TOTAL`
+	and e.`SIGLA_DERIVADO` = d.`SIGLA_DERIVADO`
+	and e.`SIGLA_SUBDERIVADO` = s.`SIGLA_SUBDERIVADO`
+	and e.`SIGLA_TOTAL` = 'GAS_VAR';
 
 
