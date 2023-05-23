@@ -111,7 +111,8 @@ public class AcumulacionOperacionesService {
 
 	private String getPlantillaBizum(BBVACsv bbvaCsv) {
 
-		if (bbvaCsv.getObservaciones().contains(Constantes.OBSERVACION_BIZUM_ENVIADO)) {
+		if (bbvaCsv.getObservaciones().contains(Constantes.OBSERVACION_BIZUM_ENVIADO)
+				|| bbvaCsv.getObservaciones().contains(Constantes.OBSERVACION_BIZUM_DEVUELTO)) {
 
 			List<String> listPlantillas = transferenciasEstructuradasDefinidasRepository.getPlantilla(bbvaCsv);
 			return !Util.emptyList(listPlantillas) ? listPlantillas.get(0) : Constantes.PLANTILLA_BIZUM_SALIENTE;

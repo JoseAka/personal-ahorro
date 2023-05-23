@@ -22,6 +22,7 @@ public class Constantes {
 	public static final String CONCEPTO_BIZUM = "Bizum";
 	
 	public static final String OBSERVACION_BIZUM_ENVIADO = "ENVIADO";
+	public static final String OBSERVACION_BIZUM_DEVUELTO = "DEVUELTO";
 	public static final String OBSERVACION_BIZUM_RECIBIDO = "RECIBIDO";
 	
 	public static final String PLANTILLA_TRANSFERENCIA_SALIENTE = "GAS_VAR-TRN_SAL";

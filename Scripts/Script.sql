@@ -444,10 +444,18 @@ WHERE e.`SIGLA_TOTAL` = t.`SIGLA_TOTAL`
 	and e.`SIGLA_DERIVADO` = d.`SIGLA_DERIVADO`
 	and e.`SIGLA_SUBDERIVADO` = s.`SIGLA_SUBDERIVADO`;
 
-select *
+select sum(IMPORTE) 
+from(
+select IMPORTE as importe
 from acumulacion_operaciones 
-where PLANTILLA like '%ROP%'
-	and left(IMPORTE, 1) regexp '[0-9]';
+where PLANTILLA like '%AHR_NEG%'
+-- order by FECHA_VALOR desc
+union all
+select IMPORTE as importe
+from acumulacion_operaciones 
+where PLANTILLA like '%AHR_POS%'
+-- order by FECHA_VALOR desc
+) as tablas;
 
 -- IMPORTES NEGATIVOS
 select distinct REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1)) as plantilla,
@@ -485,20 +493,53 @@ group by REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1));
 
 	
 	
- 
+ select *
+ from acumulacion_operaciones 
+ order by FECHA_VALOR desc ;
 
 
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------- TABLA TOTAL_TOTALES ---------------------------------------------
 -- ----------------------------------------------------------------------------------------------
 
-select SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) as SIGLA_TOTAL,
-	abs(sum(ao.IMPORTE)) as TOTAL_IMPORTE
+-- Controlar en el ANGULAR el signo del AHORRO:
+-- 	hay que ponerlo de negativo a positivo
+
+select  SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) as SIGLA_TOTAL,
+	sum(ao.IMPORTE) as TOTAL_IMPORTE
 from acumulacion_operaciones ao 
 where SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) 
 		in (select distinct SIGLA_TOTAL 
-			from total_params)
-group by SUBSTRING_INDEX(ao.PLANTILLA ,'-',1);
+			from total_params
+			where SIGLA_TOTAL != 'AHR')
+group by SUBSTRING_INDEX(ao.PLANTILLA ,'-',1)
+order by sum(ao.IMPORTE) DESC;
+
+-- LIQUIDO TOTAL ENTRE LAS DOS CUENTAS
+select sum(importe) as liquidos_total_entre_las_dos_cuentas
+from (
+		select sum(TOTAL_IMPORTE) as importe
+		from (
+			select sum(ao.IMPORTE) as TOTAL_IMPORTE
+			from acumulacion_operaciones ao 
+			where SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) 
+					in (select distinct SIGLA_TOTAL 
+						from total_params
+						where SIGLA_TOTAL != 'AHR')
+			group by SUBSTRING_INDEX(ao.PLANTILLA ,'-',1)
+			) as alias
+		union all
+		select abs(sum(TOTAL_IMPORTE)) as importe
+		from (
+			select sum(ao.IMPORTE) as TOTAL_IMPORTE
+			from acumulacion_operaciones ao 
+			where SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) 
+					in (select distinct SIGLA_TOTAL 
+						from total_params
+						where SIGLA_TOTAL = 'AHR')
+			group by SUBSTRING_INDEX(ao.PLANTILLA ,'-',1)
+			) as alias
+	) as alias_2;
 
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------- GASTOS FIJOS ---------------------------------------------
