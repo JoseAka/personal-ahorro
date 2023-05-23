@@ -85,7 +85,8 @@ INSERT INTO TOTAL_PARAMS (NOMBRE_TOTAL,SIGLA_TOTAL) VALUES
 	 ('Gasto fijo','GAS_FIJ'),
 	 ('Gasto variable','GAS_VAR'),
 	 ('Ingreso fijo','ING_FIJ'),
-	 ('Ingreso variable','ING_VAR');
+	 ('Ingreso variable','ING_VAR'),
+	 ('Inversion','INV');
 
 -- DERIVADO_PARAMS
 INSERT INTO DERIVADO_PARAMS (NOMBRE_DERIVADO,SIGLA_DERIVADO) VALUES
@@ -103,7 +104,6 @@ INSERT INTO DERIVADO_PARAMS (NOMBRE_DERIVADO,SIGLA_DERIVADO) VALUES
 	 ('Gasolina','GSL'),
 	 ('Gimnasio','GYM'),
 	 ('Ingreso en efectivo','ING_EFE'),
-	 ('Inversion','INV'),
 	 ('Inversion obtenida','INV_OBT'),
 	 ('Inversion realizada','INV_REA'),
 	 ('Nomina','NOM'),
@@ -444,15 +444,150 @@ WHERE e.`SIGLA_TOTAL` = t.`SIGLA_TOTAL`
 	and e.`SIGLA_DERIVADO` = d.`SIGLA_DERIVADO`
 	and e.`SIGLA_SUBDERIVADO` = s.`SIGLA_SUBDERIVADO`;
 
+select *
+from acumulacion_operaciones 
+where PLANTILLA like '%ROP%'
+	and left(IMPORTE, 1) regexp '[0-9]';
+
+-- IMPORTES NEGATIVOS
+select distinct REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1)) as plantilla,
+	sp.NOMBRE_SUBDERIVADO as nombre 
+from acumulacion_operaciones as ao,
+	subderivado_params as sp 
+where sp.SIGLA_SUBDERIVADO = REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1))
+	and left(ao.IMPORTE, 1) = '-'
+group by REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1))
+union all 
+select distinct REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1)) as plantilla ,
+	dp.NOMBRE_DERIVADO as nombre
+from acumulacion_operaciones as ao,
+	derivado_params as dp
+where dp.SIGLA_DERIVADO = REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1))
+	and left(ao.IMPORTE, 1) = '-'
+group by REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1));
+
+-- IMPORTES POSITIVOS 
+select distinct REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1)) as plantilla,
+	sp.NOMBRE_SUBDERIVADO as nombre 
+from acumulacion_operaciones as ao,
+	subderivado_params as sp 
+where sp.SIGLA_SUBDERIVADO = REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1))
+	and left(ao.IMPORTE, 1) regexp '[0-9]'
+group by REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1))
+union all 
+select distinct REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1)) as plantilla ,
+	dp.NOMBRE_DERIVADO as nombre
+from acumulacion_operaciones as ao,
+	derivado_params as dp
+where dp.SIGLA_DERIVADO = REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1))
+	and left(ao.IMPORTE, 1) regexp '[0-9]'
+group by REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1));
+
+	
+	
+ 
+
+
+-- ----------------------------------------------------------------------------------------------
+-- ----------------------------------- TABLA TOTAL_TOTALES ---------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+
+select SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) as SIGLA_TOTAL,
+	abs(sum(ao.IMPORTE)) as TOTAL_IMPORTE
+from acumulacion_operaciones ao 
+where SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) 
+		in (select distinct SIGLA_TOTAL 
+			from total_params)
+group by SUBSTRING_INDEX(ao.PLANTILLA ,'-',1);
+
+-- ----------------------------------------------------------------------------------------------
+-- ----------------------------------- GASTOS FIJOS ---------------------------------------------
+-- ----------------------------------------------------------------------------------------------
 
 -- ACUMULACION DE GASTOS FIJOS GASTOS FIJOS AGRUPADOS POR PLANTILLAS DE 2022
-select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
+select PLANTILLA,
+	abs(sum(IMPORTE)) as TOTAL_IMPORTE,
+	count(*) as CANTIDAD_OPERACIONES,
+	abs(sum(IMPORTE))/count(*) as MEDIA_POR_CANTIDAD_OPERACIONES,
+	abs(sum(IMPORTE))/12 as MEDIA_POR_MENSUAL
 from ACUMULACION_OPERACIONES
 where PLANTILLA LIKE '%GAS_FIJ%'
 	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
 		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
 group by PLANTILLA;
 
+-- TOTAL GASTOS FIJOS
+select e.SIGLA_TOTAL,
+	tp.NOMBRE_TOTAL,
+	abs(sum(ao.IMPORTE)) as TOTAL_IMPORTE
+from TOTAL_PARAMS  as tp,
+	ESTRUCTURAS as e,
+	ACUMULACION_OPERACIONES as ao
+where  e.PLANTILLA = ao.PLANTILLA
+	and  e.SIGLA_TOTAL = tp.SIGLA_TOTAL
+	and e.PLANTILLA LIKE '%GAS_FIJ%'
+	and (ao.FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or ao.FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') );
+
+-- TOTAL GASTOS FIJOS DERIVADOS
+select SUBSTRING_INDEX(ao.PLANTILLA ,'-',2) as PLANTILLA_ACTUAL,
+	e.SIGLA_TOTAL,
+	e.SIGLA_DERIVADO,
+	tp.NOMBRE_TOTAL,
+	dp.NOMBRE_DERIVADO,
+	abs(sum(ao.IMPORTE)) as TOTAL_IMPORTE
+from TOTAL_PARAMS  as tp,
+	DERIVADO_PARAMS as dp,
+	ESTRUCTURAS as e,
+	ACUMULACION_OPERACIONES as ao
+where e.PLANTILLA = ao.PLANTILLA
+	and  e.SIGLA_TOTAL = tp.SIGLA_TOTAL
+	and e.SIGLA_DERIVADO = dp.SIGLA_DERIVADO
+	and ao.PLANTILLA LIKE '%GAS_FIJ%'
+	and (ao.FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or ao.FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
+group by SUBSTRING_INDEX(ao.PLANTILLA ,'-',2);
+
+-- TOTAL GASTOS FIJOS DERIVADO_1 SUBDERIVADOS
+-- ~ IF -> Se hara siempre que la sigla subderivado sea distinto de #, comprobar por codigo.
+-- 		   En este caso existe de derivados Coche y Piso. Coche si tiene subderivados,
+-- 		   pero Piso no, con lo cual esta ultima consulta no se hace
+-- ~ Se hara por codigo para que exista nada mas que una consulta, y que se itere por
+-- 	cada subderivado
+select e.PLANTILLA as PLANTILLA_ACTUAL,
+	e.SIGLA_TOTAL,
+	e.SIGLA_DERIVADO,
+	e.SIGLA_SUBDERIVADO,
+	tp.NOMBRE_TOTAL,
+	dp.NOMBRE_DERIVADO,
+	sp.NOMBRE_SUBDERIVADO,
+	abs(sum(ao.IMPORTE)) as TOTAL_IMPORTE
+from TOTAL_PARAMS  as tp,
+	DERIVADO_PARAMS as dp,
+	SUBDERIVADO_PARAMS as sp,
+	ESTRUCTURAS as e,
+	ACUMULACION_OPERACIONES as ao
+where e.PLANTILLA = ao.PLANTILLA
+	and  e.SIGLA_TOTAL = tp.SIGLA_TOTAL
+	and e.SIGLA_DERIVADO = dp.SIGLA_DERIVADO
+	and e.SIGLA_SUBDERIVADO = sp.SIGLA_SUBDERIVADO
+	and ao.PLANTILLA LIKE '%GAS_FIJ_CCH%'
+	and (ao.FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or ao.FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
+group by e.PLANTILLA ;
+
+
+-- ----------------------------------------------------------------------------------------------
+-- --------------------------------- GASTOS VARIABLES -------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+
+-- TOTAL GASTOS VARIABLES
+select abs(sum(IMPORTE)) as TOTAL_IMPORTE_GAS_VAR
+from ACUMULACION_OPERACIONES
+where PLANTILLA LIKE '%GAS_VAR%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') );
+	
 -- ACUMULACION DE GASTOS FIJOS VARIABLES FIJOS AGRUPADOS POR PLANTILLAS DE 2022
 select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
 from ACUMULACION_OPERACIONES
@@ -460,6 +595,17 @@ where PLANTILLA LIKE '%GAS_VAR%'
 	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
 		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
 group by PLANTILLA;
+
+-- ----------------------------------------------------------------------------------------------
+-- ---------------------------------- INGRESOS FIJOS --------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+
+-- TOTAL INGRESOS FIJOS
+select abs(sum(IMPORTE)) as TOTAL_IMPORTE_ING_FIJ
+from ACUMULACION_OPERACIONES
+where PLANTILLA LIKE '%ING_FIJ%'
+	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') );
 
 -- ACUMULACION INGRESOS FIJOS AGRUPADOS POR PLANTILLAS DE 2022
 select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
@@ -469,13 +615,16 @@ where PLANTILLA LIKE '%ING_FIJ%'
 		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
 group by PLANTILLA;
 
--- ACUMULACION DE INGRESOS VARIABLES AGRUPADOS POR PLANTILLAS DE 2022
-select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
+-- ----------------------------------------------------------------------------------------------
+-- -------------------------------- INGRESOS VARIANLES ------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+
+-- TOTAL INGRESOS VARIABLES
+select abs(sum(IMPORTE)) as TOTAL_IMPORTE_ING_VAR
 from ACUMULACION_OPERACIONES
 where PLANTILLA LIKE '%ING_VAR%'
 	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
-		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
-group by PLANTILLA;
+		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') );
 
 -- ACUMULACION DE INGRESOS VARIABLES AGRUPADOS POR PLANTILLAS DE 2022
 select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
@@ -484,6 +633,10 @@ where PLANTILLA LIKE '%ING_VAR%'
 	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 
 		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
 group by PLANTILLA;
+
+-- ----------------------------------------------------------------------------------------------
+-- -------------------------------------- AHORROS -----------------------------------------------
+-- ----------------------------------------------------------------------------------------------
 
 -- ACUMULACION DE AHORROS AGRUPADOS POR PLANTILLAS DE 2022
 select PLANTILLA, abs(sum(IMPORTE)), count(*), abs(sum(IMPORTE))/count(*) as media
@@ -493,8 +646,12 @@ where PLANTILLA LIKE '%AHR%'
 		or FECHA_VALOR >=  STR_TO_DATE('2022-01-01', '%Y-%m-%d') )
 group by PLANTILLA;
 
+-- ----------------------------------------------------------------------------------------------
+-- ------------------------------------ INVERSIONES ---------------------------------------------
+-- ----------------------------------------------------------------------------------------------
+
 -- ACUMULACION DE INVERSIONES AGRUPADOS POR PLANTILLAS DE 2022
-select sum(IMPORTE) 
+select PLANTILLA, sum(IMPORTE) 
 from ACUMULACION_OPERACIONES
 where PLANTILLA LIKE '%INV%'
 	and (FECHA_VALOR <= STR_TO_DATE('2022-12-31', '%Y-%m-%d') 

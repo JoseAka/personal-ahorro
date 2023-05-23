@@ -25,8 +25,10 @@ public class Constantes {
 	public static final String OBSERVACION_BIZUM_RECIBIDO = "RECIBIDO";
 	
 	public static final String PLANTILLA_TRANSFERENCIA_SALIENTE = "GAS_VAR-TRN_SAL";
+	public static final String PLANTILLA_TRANSFERENCIA_ENTRANTE = "ING_VAR-TRN_ENT";
 	public static final String PLANTILLA_BIZUM_SALIENTE = "GAS_VAR-BIZ_SAL";
 	public static final String PLANTILLA_BIZUM_ENTRANTE = "ING_VAR-BIZ_ENT";
+	public static final String PLANTILLA_ROPA = "GAS_VAR-OCI-ROP";
 	
 	public static final String[] PESTANIAS_EXCE = {"Informe BBVA"};
 

@@ -86,13 +86,18 @@ public class AcumulacionOperacionesService {
 
 	private String getPlantilla(BBVACsv bbvaCsv, Map<String, String> conceptosEstructuradosMap) {
 
-		switch (bbvaCsv.getConcepto()) {
-		case Constantes.CONCEPTO_TRANSFERENCIA_REALIZADA:
-			return getPlantillaTransferencia(bbvaCsv);
-		case Constantes.CONCEPTO_BIZUM:
-			return getPlantillaBizum(bbvaCsv);
-		default:
-			return conceptosEstructuradosMap.getOrDefault(bbvaCsv.getConcepto(), null);
+		if (Constantes.PLANTILLA_ROPA.equalsIgnoreCase(conceptosEstructuradosMap.get(bbvaCsv.getConcepto()))
+				&& Double.parseDouble(bbvaCsv.getImporte().replace(',', '.')) > 0) {
+			return Constantes.PLANTILLA_TRANSFERENCIA_ENTRANTE;
+		} else {
+			switch (bbvaCsv.getConcepto()) {
+			case Constantes.CONCEPTO_TRANSFERENCIA_REALIZADA:
+				return getPlantillaTransferencia(bbvaCsv);
+			case Constantes.CONCEPTO_BIZUM:
+				return getPlantillaBizum(bbvaCsv);
+			default:
+				return conceptosEstructuradosMap.getOrDefault(bbvaCsv.getConcepto(), null);
+			}
 		}
 
 	}
