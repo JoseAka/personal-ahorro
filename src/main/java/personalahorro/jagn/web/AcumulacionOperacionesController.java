@@ -8,31 +8,37 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import personalahorro.jagn.domain.AcumulacionOperacionesResponse;
 import personalahorro.jagn.domain.ConceptosEstructuradosResponse;
+import personalahorro.jagn.domain.OperacionesRequest;
 import personalahorro.jagn.service.AcumulacionOperacionesService;
 import personalahorro.jagn.service.LectorCsvService;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("/rest/lectorCsv")
-public class LectorCsvController {
+@RequestMapping("/rest/acumulacionOperaciones")
+public class AcumulacionOperacionesController {
 
 	@Autowired
 	private AcumulacionOperacionesService acumulacionOperacionesService;
 	@Autowired
 	private LectorCsvService lectorCsvService;
 
-	@GetMapping("/getAll")
+	@GetMapping("/getAllConceptos")
 	public ResponseEntity<List<AcumulacionOperacionesResponse>> getAllConceptos() {
-		return new ResponseEntity<>(acumulacionOperacionesService.getAll(), HttpStatus.OK);
+		return new ResponseEntity<>(acumulacionOperacionesService.getAllConceptos(), HttpStatus.OK);
 	}
-
-	//TODO LLEVAR AL CONTROLADOR DE ACUMULACION OPERACIONES
+	
+	@PostMapping("/getOperaciones")
+	public ResponseEntity<List<AcumulacionOperacionesResponse>> getOperaciones(@RequestBody OperacionesRequest operacionesRequest) {
+		return new ResponseEntity<>(acumulacionOperacionesService.getOperaciones(operacionesRequest), HttpStatus.OK);
+	}
+	
 	@PostMapping("/importCsv")
 	public ResponseEntity<String> importCsv(MultipartFile file) {
 		String message = "";

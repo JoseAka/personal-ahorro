@@ -13,10 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.extern.slf4j.Slf4j;
 import personalahorro.jagn.domain.AcumulacionOperacionesResponse;
 import personalahorro.jagn.domain.BBVACsv;
 import personalahorro.jagn.domain.ConceptosEstructuradosRequest;
 import personalahorro.jagn.domain.ConceptosEstructuradosResponse;
+import personalahorro.jagn.domain.OperacionesRequest;
 import personalahorro.jagn.entity.AcumulacionOperaciones;
 import personalahorro.jagn.exception.PersonalAhorroException;
 import personalahorro.jagn.repository.AcumulacionOperacionesRepository;
@@ -25,6 +27,7 @@ import personalahorro.jagn.util.Constantes;
 import personalahorro.jagn.util.Util;
 
 @Service
+@Slf4j
 public class AcumulacionOperacionesService {
 
 	@Autowired
@@ -39,11 +42,11 @@ public class AcumulacionOperacionesService {
 	@Autowired
 	private LectorCsvService lectorCsvService;
 
-	public List<AcumulacionOperacionesResponse> getAll() {
+	public List<AcumulacionOperacionesResponse> getAllConceptos() {
 
 		List<AcumulacionOperacionesResponse> listResponse = new ArrayList<>();
 
-		acumulacionOperacionesRepository.getAll().forEach(item -> {
+		acumulacionOperacionesRepository.getAllConceptos().forEach(item -> {
 			listResponse.add(AcumulacionOperacionesResponse.builder().nombreConcepto(item.getNombreConcepto())
 					.plantilla(item.getPlantilla()).build());
 		});
@@ -51,36 +54,54 @@ public class AcumulacionOperacionesService {
 		return listResponse;
 	}
 
+	public List<AcumulacionOperacionesResponse> getOperaciones(OperacionesRequest operacionesRequest) {
+
+		List<AcumulacionOperacionesResponse> listResponse = new ArrayList<>();
+
+		acumulacionOperacionesRepository.getOperaciones(operacionesRequest).forEach(item -> {
+			listResponse.add(AcumulacionOperacionesResponse.builder().idOperacion(item.getIdOperacion()).plantilla(item.getPlantilla())
+					.entidad(item.getEntidad()).fechaContable(item.getFechaContable().toString()).fechaValor(item.getFechaValor().toString()).nombreConcepto(item.getNombreConcepto())
+					.importe(String.valueOf(item.getImporte())).divisa(item.getDivisaImporte()).observaciones(item.getObservaciones()).build());
+		});
+
+		return listResponse;
+	}
+
 	@Transactional
 	public void acumularOperacion(MultipartFile file) {
-		try {
-			List<AcumulacionOperaciones> listAcumulacionOperaciones = new ArrayList<>();
+		if (lectorCsvService.hasCSVFormat(file)) {
 
-			Map<String, String> conceptosEstructuradosMap = conceptosEstructuradosService.getAll().stream()
-					.collect(Collectors.toMap(ConceptosEstructuradosResponse::getNombreConcepto,
-							ConceptosEstructuradosResponse::getPlantilla));
+			try {
+				List<AcumulacionOperaciones> listAcumulacionOperaciones = new ArrayList<>();
 
-			lectorCsvService.readCsvBBVA(file.getInputStream()).stream().distinct().collect(Collectors.toList())
-					.forEach(item -> {
-						listAcumulacionOperaciones
-								.add(getEntityAcumulacionOperaciones(item, conceptosEstructuradosMap));
-					});
+				Map<String, String> conceptosEstructuradosMap = conceptosEstructuradosService.getAll().stream()
+						.collect(Collectors.toMap(ConceptosEstructuradosResponse::getNombreConcepto,
+								ConceptosEstructuradosResponse::getPlantilla));
 
-			listAcumulacionOperaciones.forEach(item -> {
-				if (!conceptosEstructuradosMap.containsKey(item.getNombreConcepto())) {
-					try {
-						conceptosEstructuradosService
-								.save(ConceptosEstructuradosRequest.builder().nombreConcepto(item.getNombreConcepto())
-										.plantilla(Constantes.ALMOADILLA_BBDD).build());
-					} catch (PersonalAhorroException e) {
-						e.printStackTrace();
+				lectorCsvService.readCsvBBVA(file.getInputStream()).stream().distinct().collect(Collectors.toList())
+						.forEach(item -> {
+							listAcumulacionOperaciones
+									.add(getEntityAcumulacionOperaciones(item, conceptosEstructuradosMap));
+						});
+
+				listAcumulacionOperaciones.forEach(item -> {
+					if (!conceptosEstructuradosMap.containsKey(item.getNombreConcepto())) {
+						try {
+							conceptosEstructuradosService.save(
+									ConceptosEstructuradosRequest.builder().nombreConcepto(item.getNombreConcepto())
+											.plantilla(Constantes.ALMOADILLA_BBDD).build());
+						} catch (PersonalAhorroException e) {
+							e.printStackTrace();
+						}
 					}
-				}
-				acumulacionOperacionesRepository.save(item);
-			});
+					acumulacionOperacionesRepository.save(item);
+				});
 
-		} catch (IOException iOException) {
-			throw new RuntimeException("fail to store csv data: " + iOException.getMessage());
+			} catch (IOException iOException) {
+				throw new RuntimeException("fail to store csv data: " + iOException.getMessage());
+			}
+		} else {
+			log.info("El fichero no tiene formato CSV");
 		}
 	}
 

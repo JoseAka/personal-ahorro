@@ -457,6 +457,11 @@ where PLANTILLA like '%AHR_POS%'
 -- order by FECHA_VALOR desc
 ) as tablas;
 
+select *
+from acumulacion_operaciones 
+where PLANTILLA like '%AHR%'
+ order by FECHA_VALOR desc ;
+
 -- IMPORTES NEGATIVOS
 select distinct REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1)) as plantilla,
 	sp.NOMBRE_SUBDERIVADO as nombre 
@@ -495,23 +500,27 @@ group by REVERSE(SUBSTRING_INDEX(REVERSE(ao.PLANTILLA) ,'-',1));
 	
  select *
  from acumulacion_operaciones 
- order by FECHA_VALOR desc ;
+ order by FECHA_VALOR desc;
 
 
 -- ----------------------------------------------------------------------------------------------
--- ----------------------------------- TABLA TOTAL_TOTALES ---------------------------------------------
+-- ----------------------------------- TABLA TOTAL_TOTALES --------------------------------------
 -- ----------------------------------------------------------------------------------------------
 
 -- Controlar en el ANGULAR el signo del AHORRO:
 -- 	hay que ponerlo de negativo a positivo
 
 select  SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) as SIGLA_TOTAL,
+	tp.NOMBRE_TOTAL,
 	sum(ao.IMPORTE) as TOTAL_IMPORTE
-from acumulacion_operaciones ao 
-where SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) 
+from acumulacion_operaciones ao,
+	total_params tp 
+where SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) = tp.SIGLA_TOTAL 
+	and SUBSTRING_INDEX(ao.PLANTILLA ,'-',1) 
 		in (select distinct SIGLA_TOTAL 
 			from total_params
-			where SIGLA_TOTAL != 'AHR')
+			-- where SIGLA_TOTAL != 'AHR'
+			)
 group by SUBSTRING_INDEX(ao.PLANTILLA ,'-',1)
 order by sum(ao.IMPORTE) DESC;
 
@@ -540,6 +549,7 @@ from (
 			group by SUBSTRING_INDEX(ao.PLANTILLA ,'-',1)
 			) as alias
 	) as alias_2;
+
 
 -- ----------------------------------------------------------------------------------------------
 -- ----------------------------------- GASTOS FIJOS ---------------------------------------------
@@ -730,5 +740,38 @@ WHERE e.`SIGLA_TOTAL` = t.`SIGLA_TOTAL`
 	and e.`SIGLA_DERIVADO` = d.`SIGLA_DERIVADO`
 	and e.`SIGLA_SUBDERIVADO` = s.`SIGLA_SUBDERIVADO`
 	and e.`SIGLA_TOTAL` = 'GAS_VAR';
+
+-- ----------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------------
+
+SELECT *
+FROM ACUMULACION_OPERACIONES
+WHERE PLANTILLA LIKE :plantilla
+	AND ENTIDAD = :entidad
+	AND FECHA_VALOR <= STR_TO_DATE(:endDate, '%Y-%m-%d') 
+	AND FECHA_VALOR >=  STR_TO_DATE(:startDate, '%Y-%m-%d')
+	AND IMPORTE <= :maxImporte 
+	AND IMPORTE >=  :minImporte
+ORDER BY FECHA_VALOR ASC;
+
+	AND NOMBRE_CONCEPTO = :concepto
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -8,8 +8,9 @@ import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
 
+import personalahorro.jagn.domain.OperacionesRequest;
 import personalahorro.jagn.entity.AcumulacionOperaciones;
-import personalahorro.jagn.entity.ConceptosEstructurados;
+import personalahorro.jagn.util.Util;
 
 @Repository
 public class AcumulacionOperacionesRepository {
@@ -28,13 +29,96 @@ public class AcumulacionOperacionesRepository {
 	private static final String PARAMETER_DIVISA_DISPONIBLE = "divisaDisponible";
 	private static final String PARAMETER_OBSERVACIONES = "observaciones";
 	private static final String PARAMETER_TIMESTAMP = "timestamp";
+	private static final String PARAMETER_START_DATE = "startDate";
+	private static final String PARAMETER_END_DATE = "endDate";
+	private static final String PARAMETER_MIN_IMPORTE = "minImporte";
+	private static final String PARAMETER_MAX_IMPORTE = "maxImporte";
 
-	public List<AcumulacionOperaciones> getAll() {
+	public List<AcumulacionOperaciones> getAllConceptos() {
 
 		String sql = " SELECT * FROM {h-schema}ACUMULACION_OPERACIONES ";
 
 		Query query = em.createNativeQuery(sql, AcumulacionOperaciones.class);
 		return query.getResultList();
+	}
+
+	public List<AcumulacionOperaciones> getOperaciones(OperacionesRequest operacionesRequest) {
+
+		String sql = " SELECT *" + " FROM ACUMULACION_OPERACIONES " + getWhereSqlGetOperaciones(operacionesRequest)
+				+ " ORDER BY FECHA_VALOR ASC ";
+
+		Query query = em.createNativeQuery(sql, AcumulacionOperaciones.class);
+
+		setParameterGetOperaciones(operacionesRequest, query);
+
+		return query.getResultList();
+	}
+
+	private String getWhereSqlGetOperaciones(OperacionesRequest operacionesRequest) {
+
+		StringBuilder whereSql = new StringBuilder(" WHERE ");
+
+		if (!Util.emptyString(operacionesRequest.getPlantilla())) {
+			whereSql.append(" PLANTILLA LIKE :" + PARAMETER_PLANTILLA);
+		} else {
+			whereSql.append(" PLANTILLA LIKE '%%' ");
+		}
+
+		if (!Util.emptyString(operacionesRequest.getEntidad())) {
+			whereSql.append(" AND ENTIDAD = :" + PARAMETER_ENTIDAD);
+		}
+
+		if (!Util.emptyString(operacionesRequest.getEndDate())) {
+			whereSql.append(" AND FECHA_VALOR <= STR_TO_DATE(:" + PARAMETER_END_DATE + ", '%Y-%m-%d') ");
+		}
+
+		if (!Util.emptyString(operacionesRequest.getStartDate())) {
+			whereSql.append(" AND FECHA_VALOR >=  STR_TO_DATE(:" + PARAMETER_START_DATE + ", '%Y-%m-%d') ");
+		}
+
+		if (!Util.emptyString(operacionesRequest.getMaxImporte())) {
+			whereSql.append(" AND IMPORTE <= :" + PARAMETER_MAX_IMPORTE);
+		}
+
+		if (!Util.emptyString(operacionesRequest.getMinImporte())) {
+			whereSql.append(" AND IMPORTE >= :" + PARAMETER_MIN_IMPORTE);
+		}
+
+		if (!Util.emptyString(operacionesRequest.getNombreConcepto())) {
+			whereSql.append(" AND NOMBRE_CONCEPTO = :" + PARAMETER_CONCEPTO);
+		}
+
+		return whereSql.toString();
+	}
+
+	private void setParameterGetOperaciones(OperacionesRequest operacionesRequest, Query query) {
+		if (!Util.emptyString(operacionesRequest.getPlantilla())) {
+			query.setParameter(PARAMETER_PLANTILLA, "%" + operacionesRequest.getPlantilla() + "%");
+		}
+
+		if (!Util.emptyString(operacionesRequest.getEntidad())) {
+			query.setParameter(PARAMETER_ENTIDAD, operacionesRequest.getEntidad());
+		}
+
+		if (!Util.emptyString(operacionesRequest.getEndDate())) {
+			query.setParameter(PARAMETER_END_DATE, operacionesRequest.getEndDate());
+		}
+
+		if (!Util.emptyString(operacionesRequest.getStartDate())) {
+			query.setParameter(PARAMETER_START_DATE, operacionesRequest.getStartDate());
+		}
+
+		if (!Util.emptyString(operacionesRequest.getMaxImporte())) {
+			query.setParameter(PARAMETER_MAX_IMPORTE, Double.parseDouble(operacionesRequest.getMaxImporte()));
+		}
+
+		if (!Util.emptyString(operacionesRequest.getMinImporte())) {
+			query.setParameter(PARAMETER_MIN_IMPORTE, Double.parseDouble(operacionesRequest.getMinImporte()));
+		}
+
+		if (!Util.emptyString(operacionesRequest.getNombreConcepto())) {
+			query.setParameter(PARAMETER_CONCEPTO, operacionesRequest.getNombreConcepto());
+		}
 	}
 
 	public void save(AcumulacionOperaciones acumulacionOperacionesEntity) {
